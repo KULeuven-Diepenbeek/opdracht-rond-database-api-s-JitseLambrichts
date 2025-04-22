@@ -10,7 +10,6 @@ import java.util.List;
 public class SpelerRepositoryJDBCimpl implements SpelerRepository {
   private Connection connection;
 
-  // Constructor
   SpelerRepositoryJDBCimpl(Connection connection) {
     this.connection = connection;
   }
@@ -99,7 +98,7 @@ public class SpelerRepositoryJDBCimpl implements SpelerRepository {
       prepared.close();
       connection.commit();
     } catch (Exception e) {
-      throw new RuntimeException();
+      throw new RuntimeException(e);
     }
   }
 
@@ -169,13 +168,37 @@ public class SpelerRepositoryJDBCimpl implements SpelerRepository {
   }
 
   @Override
-  public void addSpelerToTornooi(int tornooiId) {
-    
+  public void addSpelerToTornooi(int tornooiId, int tennisvlaanderenId) {
+    getSpelerByTennisvlaanderenId(tennisvlaanderenId);
+    try {
+      PreparedStatement prepared = (PreparedStatement) connection
+        .prepareStatement("INSERT INTO speler_speelt_tornooi (speler, tornooi) VALUES (?, ?)");
+        prepared.setInt(1, tennisvlaanderenId);
+        prepared.setInt(2, tornooiId);
+        prepared.executeUpdate();
+
+        prepared.close();
+        connection.commit();
+    } catch (Exception e){
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
-  public void removeSpelerFromTornooi(int tornooiId) {
-    // TODO: verwijder de "throw new UnsupportedOperationException" en schrijf de code die de gewenste methode op de juiste manier implementeerd zodat de testen slagen.
-    throw new UnsupportedOperationException("Unimplemented method 'removeSpelerFromTornooi'");
+  public void removeSpelerFromTornooi(int tornooiId, int tennisvlaanderenId) {
+    getSpelerByTennisvlaanderenId(tennisvlaanderenId);
+    try {
+      PreparedStatement prepared = (PreparedStatement) connection
+        .prepareStatement("DELETE FROM speler_speelt_tornooi WHERE speler = ? AND tornooi = ?");
+        prepared.setInt(1, tennisvlaanderenId);
+        prepared.setInt(2, tornooiId);
+        prepared.executeUpdate();
+
+        prepared.close();
+        connection.commit();
+    } catch (Exception e){
+      throw new RuntimeException(e);
+    }
   }
+
 }

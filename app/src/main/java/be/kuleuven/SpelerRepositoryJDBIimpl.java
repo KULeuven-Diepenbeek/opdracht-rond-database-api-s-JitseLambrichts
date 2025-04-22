@@ -9,6 +9,7 @@ public class SpelerRepositoryJDBIimpl implements SpelerRepository {
 
   // Constructor
   SpelerRepositoryJDBIimpl(String connectionString, String user, String pwd) {
+    // TODO: vul verder aan of verbeter
     this.jdbi = Jdbi.create(connectionString, user, pwd);
   }
 
@@ -109,14 +110,28 @@ public class SpelerRepositoryJDBIimpl implements SpelerRepository {
   }
 
   @Override
-  public void addSpelerToTornooi(int tornooiId) {
-    // TODO: verwijder de "throw new UnsupportedOperationException" en schrijf de code die de gewenste methode op de juiste manier implementeerd zodat de testen slagen.
-    throw new UnsupportedOperationException("Unimplemented method 'addSpelerToTornooi'");
+  public void addSpelerToTornooi(int tornooiId, int tennisvlaanderenId) {
+    int affectedRows = jdbi.withHandle(handle -> {
+      return handle.createUpdate("INSERT INTO speler_speelt_tornooi (speler, tornooi) VALUES (:speler, :tornooi)")
+        .bind("speler", tennisvlaanderenId)
+        .bind("tornooi", tornooiId)
+        .execute();
+    });
+    if (affectedRows == 0) {
+      throw new RuntimeException();
+    }
   }
 
   @Override
-  public void removeSpelerFromTornooi(int tornooiId) {
-    // TODO: verwijder de "throw new UnsupportedOperationException" en schrijf de code die de gewenste methode op de juiste manier implementeerd zodat de testen slagen.
-    throw new UnsupportedOperationException("Unimplemented method 'removeSpelerFromTornooi'");
+  public void removeSpelerFromTornooi(int tornooiId, int tennisvlaanderenId) {
+    int affectedRows = jdbi.withHandle(handle -> {
+      return handle.createUpdate("DELETE FROM speler_speelt_tornooi WHERE speler = :speler AND tornooi = :tornooi")
+        .bind("speler", tennisvlaanderenId)
+        .bind("tornooi", tornooiId)
+        .execute();
+    });
+    if (affectedRows == 0) {
+      throw new RuntimeException();
+    }
   }
 }

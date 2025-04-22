@@ -27,6 +27,10 @@ public class Speler {
     return tennisvlaanderenId;
   }
 
+  public void setTennisvlaanderenid(int tennisvlaanderenId) {
+    this.tennisvlaanderenId = tennisvlaanderenId;
+  }
+
   public String getNaam() {
     return naam;
   }
