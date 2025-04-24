@@ -9,14 +9,13 @@ public class SpelerRepositoryJDBIimpl implements SpelerRepository {
 
   // Constructor
   SpelerRepositoryJDBIimpl(String connectionString, String user, String pwd) {
-    // TODO: vul verder aan of verbeter
     this.jdbi = Jdbi.create(connectionString, user, pwd);
   }
 
   @Override
   public void addSpelerToDb(Speler speler) {
     jdbi.withHandle(handle -> {
-      return handle.createUpdate("INSERT INTO speler (tennisvlaanderenid, naam, punten) VALUES (:tennisvlaanderenid, :naam, :punten)")
+      return handle.createUpdate("INSERT INTO speler (tennisvlaanderenid, naam, punten) VALUES (:tennisvlaanderenId, :naam, :punten)")
         .bindBean(speler)
         .execute();
     });
@@ -45,12 +44,12 @@ public class SpelerRepositoryJDBIimpl implements SpelerRepository {
   @Override
   public void updateSpelerInDb(Speler speler) {
     int affectedRows = jdbi.withHandle(handle -> {
-      return handle.createUpdate("UPDATE speler SET naam = :naam, punten = :punten WHERE tennisvlaanderenid = :tennisvlaanderenid")
+      return handle.createUpdate("UPDATE speler SET naam = :naam, punten = :punten WHERE tennisvlaanderenid = :tennisvlaanderenId")
         .bindBean(speler)
         .execute();
     });
     if (affectedRows == 0) {
-      throw new InvalidSpelerException(speler.getTennisvlaanderenid() + "");
+      throw new InvalidSpelerException(speler.getTennisvlaanderenId() + "");
     }
   }
 
