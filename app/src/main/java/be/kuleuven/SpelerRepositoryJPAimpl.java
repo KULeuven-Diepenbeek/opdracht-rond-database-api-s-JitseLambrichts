@@ -1,6 +1,5 @@
 package be.kuleuven;
 
-import java.util.Comparator;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -15,45 +14,101 @@ public class SpelerRepositoryJPAimpl implements SpelerRepository {
 
   // Constructor
   SpelerRepositoryJPAimpl(EntityManager entityManager) {
-    // TODO: verwijder de "throw new UnsupportedOperationException" en schrijf de code die de gewenste constructor op de juiste manier implementeerd zodat de testen slagen.
-    throw new UnsupportedOperationException("Unimplemented constructor");
+    this.em = entityManager;
   }
 
   @Override
   public void addSpelerToDb(Speler speler) {
-    // TODO: verwijder de "throw new UnsupportedOperationException" en schrijf de code die de gewenste methode op de juiste manier implementeerd zodat de testen slagen.
-    throw new UnsupportedOperationException("Unimplemented method 'getAllSpelers'");
+    em.getTransaction().begin();
+    if (em.find(Speler.class, speler.getTennisvlaanderenId()) != null) {
+      em.getTransaction().rollback();
+      throw new RuntimeException(" A PRIMARY KEY constraint failed");
+    }
+    em.persist(speler);
+    em.getTransaction().commit();
   }
 
   @Override
   public Speler getSpelerByTennisvlaanderenId(int tennisvlaanderenId) {
-    // TODO: verwijder de "throw new UnsupportedOperationException" en schrijf de code die de gewenste methode op de juiste manier implementeerd zodat de testen slagen.
-    throw new UnsupportedOperationException("Unimplemented method 'getAllSpelers'");
+    Speler speler = em.find(Speler.class, tennisvlaanderenId);
+    if (speler == null) {
+      throw new InvalidSpelerException(String.valueOf(tennisvlaanderenId));
+    }
+    return speler;
   }
 
   @Override
   public List<Speler> getAllSpelers() {
-    // TODO: verwijder de "throw new UnsupportedOperationException" en schrijf de code die de gewenste methode op de juiste manier implementeerd zodat de testen slagen.
-    throw new UnsupportedOperationException("Unimplemented method 'getAllSpelers'");
+    CriteriaBuilder cb = em.getCriteriaBuilder();
+    CriteriaQuery<Speler> cq = cb.createQuery(Speler.class);
+    Root<Speler> root = cq.from(Speler.class);
+    cq.select(root);
+    return em.createQuery(cq).getResultList();
   }
 
   @Override
   public void updateSpelerInDb(Speler speler) {
-    // TODO: verwijder de "throw new UnsupportedOperationException" en schrijf de code die de gewenste methode op de juiste manier implementeerd zodat de testen slagen.
-    throw new UnsupportedOperationException("Unimplemented method 'getAllSpelers'");
+    em.getTransaction().begin();
+    if (em.find(Speler.class, speler.getTennisvlaanderenId()) == null) {
+      throw new InvalidSpelerException(String.valueOf(speler.getTennisvlaanderenId()));
+    }
+    em.merge(speler);
+    em.getTransaction().commit();
   }
 
   @Override
   public void deleteSpelerInDb(int tennisvlaanderenId) {
-    // TODO: verwijder de "throw new UnsupportedOperationException" en schrijf de code die de gewenste methode op de juiste manier implementeerd zodat de testen slagen.
-    throw new UnsupportedOperationException("Unimplemented method 'getAllSpelers'");
+    em.getTransaction().begin();
+    Speler speler = em.find(Speler.class, tennisvlaanderenId);
+    if (speler == null) {
+      throw new InvalidSpelerException(String.valueOf(tennisvlaanderenId));
+    }
+    em.remove(speler);
+    em.getTransaction().commit();
   }
 
   @Override
   public String getHoogsteRankingVanSpeler(int tennisvlaanderenId) {
-    // TODO: verwijder de "throw new UnsupportedOperationException" en schrijf de code die de gewenste methode op de juiste manier implementeerd zodat de testen slagen.
-    throw new UnsupportedOperationException("Unimplemented method 'getAllSpelers'");
-  }
+    Speler speler = em.find(Speler.class, tennisvlaanderenId);
+    if (speler == null) {
+      throw new InvalidSpelerException(String.valueOf(tennisvlaanderenId));
+    }
+    List<Object[]> result = em.createQuery(
+          "SELECT t.clubnaam, w.finale, w.winnaarId " +
+          "FROM Wedstrijd w, Tornooi t  " +
+          "WHERE w.tornooiId = t.id " +
+          "AND (w.speler1Id = :id OR w.speler2Id = :id) " +
+          "ORDER BY w.finale ASC ", Object[].class)
+      .setParameter("id", tennisvlaanderenId)
+      .setMaxResults(1)
+      .getResultList();
+
+    if (result.isEmpty()) {
+      return "Geen resultaten van deze speler";
+    }
+
+    String clubnaam = (String) result.get(0)[0];
+    int finale = (int) result.get(0)[1];
+    Integer winnaar = null;
+    if (result.get(0)[2] != null) {
+      winnaar = (Integer) result.get(0)[2];
+    }
+
+    String finaleString;
+    if (finale == 1 && winnaar != null && winnaar == tennisvlaanderenId) {
+        finaleString = "winst";
+    } else if (finale == 1) {
+        finaleString = "finale";
+    } else if (finale == 2) {
+        finaleString = "halve-finale";
+    } else if (finale == 4) {
+        finaleString = "kwart-finale";
+    } else {
+        finaleString = "lager dan de kwart-finales";
+    }
+
+    return "Hoogst geplaatst in het tornooi van " + clubnaam + " met plaats in de " + finaleString;
+  } 
 
   @Override
   public void addSpelerToTornooi(int tornooiId, int tennisvlaanderenId) {

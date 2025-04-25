@@ -2,8 +2,8 @@ package be.kuleuven;
 
 import javax.persistence.*;
 
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
+// import org.hibernate.annotations.OnDelete;
+// import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
 @Table(name = "wedstrijd")
